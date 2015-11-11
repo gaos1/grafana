@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/cloudfoundry-community/go-cfenv"
 	"github.com/grafana/grafana/pkg/cmd"
 	"github.com/grafana/grafana/pkg/log"
 	"github.com/grafana/grafana/pkg/login"
@@ -68,7 +69,43 @@ func main() {
 	exitChan <- 0
 }
 
+func getEnv(s cfenv.Service, key string) string {
+	data := s.Credentials[key]
+	if str, ok := data.(string); ok {
+		return str
+	} else if f, ok := data.(float64); ok {
+		return strconv.Itoa(int(f))
+	} else {
+		log.Fatal(3, "Failed to get env", key, ok)
+		return ""
+	}
+}
+
+func exportDatabaseServiceEnv() {
+	appEnv, err := cfenv.Current()
+	if err != nil {
+		log.Info("fail to get cf env. probably not a cf app", err)
+		return
+	}
+
+	mysql, err := appEnv.Services.WithLabel("p-mysql")
+	if err != nil {
+		log.Info("fail to get cf env for mysql service. probably not bind mysql service", err)
+		return
+	}
+
+	if mysql != nil {
+		os.Setenv("GF_DATABASE_TYPE", "mysql")
+		os.Setenv("GF_DATABASE_HOST", getEnv(mysql[0], "hostname")+":"+getEnv(mysql[0], "port"))
+		os.Setenv("GF_DATABASE_NAME", getEnv(mysql[0], "name"))
+		os.Setenv("GF_DATABASE_USER", getEnv(mysql[0], "username"))
+		os.Setenv("GF_DATABASE_PASSWORD", getEnv(mysql[0], "password"))
+	}
+}
+
 func initRuntime() {
+	exportDatabaseServiceEnv()
+
 	err := setting.NewConfigContext(&setting.CommandLineArgs{
 		Config:   *configFile,
 		HomePath: *homePath,

@@ -6,6 +6,7 @@ package cmd
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"path"
 
 	"github.com/Unknwon/macaron"
@@ -72,13 +73,29 @@ func mapStatic(m *macaron.Macaron, dir string, prefix string) {
 	))
 }
 
+func getPort() string {
+	if configuredPort := os.Getenv("PORT"); configuredPort == "" {
+		return setting.HttpPort
+	} else {
+		return configuredPort
+	}
+}
+
+func getHost() string {
+	if configuredPort := os.Getenv("PORT"); configuredPort == "" {
+		return setting.HttpAddr
+	} else {
+		return ""
+	}
+}
+
 func StartServer() {
 
 	var err error
 	m := newMacaron()
 	api.Register(m)
 
-	listenAddr := fmt.Sprintf("%s:%s", setting.HttpAddr, setting.HttpPort)
+	listenAddr := fmt.Sprintf("%s:%s", getHost(), getPort())
 	log.Info("Listen: %v://%s%s", setting.Protocol, listenAddr, setting.AppSubUrl)
 	switch setting.Protocol {
 	case setting.HTTP:

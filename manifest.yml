@@ -1,0 +1,9 @@
+applications:
+- name: grafana-front
+  memory: 512M
+  host: grafana-front
+  command: node server.js
+- name: grafana
+  memory: 512M
+  host: grafana
+  buildpack: https://github.com/cloudfoundry/buildpack-go.git
