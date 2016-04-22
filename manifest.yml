@@ -1,5 +1,5 @@
 applications:
 - name: grafana
-  memory: 512M
+  memory: 1024M
   host: grafana
   buildpack: https://github.com/cloudfoundry/buildpack-go.git#v1.7.1
