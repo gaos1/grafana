@@ -102,6 +102,17 @@ npm install -g grunt-cli
 grunt
 ```
 
+### Push to CloudFoundry
+
+Before push to CloudFoundry, you will need to build fronend assets as descibed above first. 
+
+```
+cf push grafana --no-start
+cf cs p-mysql 1gb mysql4grafana
+cf bs grafana mysql4grafana
+cf restart grafana
+```
+
 ### Recompile backend on source change
 To rebuild on source change (requires that you executed godep restore)
 ```
